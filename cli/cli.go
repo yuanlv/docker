@@ -12,6 +12,7 @@ import (
 )
 
 // Cli represents a command line interface.
+// Cli 结构体是一个命令行接口
 type Cli struct {
 	Stderr   io.Writer
 	handlers []Handler
@@ -30,6 +31,7 @@ type Initializer interface {
 }
 
 // New instantiates a ready-to-use Cli.
+// 创建一个实例化的Cli对象
 func New(handlers ...Handler) *Cli {
 	// make the generic Cli object the first cli handler
 	// in order to handle `docker help` appropriately
