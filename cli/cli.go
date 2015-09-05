@@ -22,10 +22,15 @@ type Cli struct {
 // Handler holds the different commands Cli will call
 // It should have methods with names starting with `Cmd` like:
 // 	func (h myHandler) CmdFoo(args ...string) error
+// Handler接口 可以表示Cli将要调用的不同命令
+// 命令方法名必须以'Cmd'开头，例如：
+// func (h myHandler) CmdFoo(args ...string) error
 type Handler interface{}
 
 // Initializer can be optionally implemented by a Handler to
 // initialize before each call to one of its commands.
+// Initializer接口 可以被一个Handler作为可选实现，
+// Initializer接口在调用每一个Handler命令之前进行初始化
 type Initializer interface {
 	Initialize() error
 }
@@ -35,12 +40,15 @@ type Initializer interface {
 func New(handlers ...Handler) *Cli {
 	// make the generic Cli object the first cli handler
 	// in order to handle `docker help` appropriately
+	// 为了比较合适的处理 ‘docker help’命令
+	// 需要将通用Cli对象作为第一个Cli handler
 	cli := new(Cli)
 	cli.handlers = append([]Handler{cli}, handlers...)
 	return cli
 }
 
 // initErr is an error returned upon initialization of a handler implementing Initializer.
+// initErr是一个返回错误的结构体，在实现Initializer接口的handler初始化时返回对应的错误
 type initErr struct{ error }
 
 func (err initErr) Error() string {
@@ -74,6 +82,7 @@ func (cli *Cli) command(args ...string) (func(...string) error, error) {
 }
 
 // Run executes the specified command.
+// Run方法执行指定的命令
 func (cli *Cli) Run(args ...string) error {
 	if len(args) > 1 {
 		command, err := cli.command(args[:2]...)
@@ -110,6 +119,12 @@ func (cli *Cli) noSuchCommand(command string) {
 // If more than one command is specified, information is only shown for the first command.
 //
 // Usage: docker help COMMAND or docker COMMAND --help
+// CmdHelp 在Docker命令行上显示提示信息
+//
+// 如果指定了多个命令，只显示第一个命令的提示信息
+//
+// 用法：docker help COMMAND 或者 docker COMMAND --help
+//
 func (cli *Cli) CmdHelp(args ...string) error {
 	if len(args) > 1 {
 		command, err := cli.command(args[:2]...)
@@ -147,6 +162,10 @@ func (cli *Cli) CmdHelp(args ...string) error {
 // from the Docker command line client.
 //
 // To see all available subcommands, run "docker --help".
+// SubCmd 是"docker"命令的子命令
+// 一个子命令代表一个可以被Docker 命令行客户端完成的动作
+//
+// 要查看所有可用的子命令，运行 "docker --help".
 func Subcmd(name string, synopses []string, description string, exitOnError bool) *flag.FlagSet {
 	var errorHandling flag.ErrorHandling
 	if exitOnError {
@@ -192,6 +211,7 @@ func Subcmd(name string, synopses []string, description string, exitOnError bool
 }
 
 // An StatusError reports an unsuccessful exit by a command.
+// StatusError 结构体报告命令的非正常退出
 type StatusError struct {
 	Status     string
 	StatusCode int
